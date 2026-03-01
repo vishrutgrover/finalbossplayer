@@ -78,5 +78,3 @@ game_result = start_poker(config, verbose=1)
 - Python 3.x
 - [PyPokerEngine](https://github.com/ishikota/PyPokerEngine)
 - NumPy
-
-Built for APOGEE 2024, 42nd edition, 4th-7th April.
