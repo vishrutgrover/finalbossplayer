@@ -13,9 +13,19 @@ This repo contains our submissions for the Silicon Chip Smackdown at APOGEE 24 a
 
 ## APOGEE 25 Winner: craziBot (AllInCounterBot)
 
-**What was novel:** The hero call. When an opponent goes all-in and we only have Ace-high (no pair), we call if the cost is 15% or less of our stack. Most bots fold here. We're banking on them bluffing with worse. It paid off.
+### How it works
 
-**Why it won:** The competition had a lot of all-in heavy bots. craziBot is built to counter that. Pre-flop it calls all-ins with a wider range than normal (any pair, AT+, KQs). Post-flop it detects aggressive bets and calls more with medium hands when it suspects a bluff. The hero call sealed it when others folded Ace-high to bluffs.
+**Pre-flop:** Ranks hole cards by strength (pairs, suited, connected, high cards). Facing an all-in: calls with a wider range (any pair, AT+, KQs). Facing a normal bet: premium hands re-raise or shove, decent hands call, weak hands fold. No bet yet: good hands open 3-4x blind, weak hands check.
+
+**Post-flop:** Uses a hand evaluator for confidence score. Detects aggressive bets (large vs blind, large vs pot, or all-in). Strong hands (two pair+): bets for value, raises when facing a bet, sometimes traps by calling with monsters. Medium hands: checks when no bet; when facing a bet, calls more if it looks aggressive (odds or bluff). Weak hands: usually folds. Adapts within each hand, no opponent profiling.
+
+### What was novel
+
+The hero call. When an opponent goes all-in and we only have Ace-high (no pair), we call if the cost is 15% or less of our stack. Most bots fold here. We're banking on them bluffing with worse. It paid off.
+
+### Why it won
+
+The competition had a lot of all-in heavy bots. craziBot is built to counter that. Pre-flop it calls all-ins with a wider range than normal (any pair, AT+, KQs). Post-flop it detects aggressive bets and calls more with medium hands when it suspects a bluff. The hero call sealed it when others folded Ace-high to bluffs.
 
 Runs on the [AI Poker 2025](https://github.com/Tanish-0001/AI-Poker-2025) engine.
 
