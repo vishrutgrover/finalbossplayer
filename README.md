@@ -4,77 +4,62 @@
 
 # FinalBossPlayer
 
-Our submission for the Silicon Chip Smackdown at APOGEE 2024. It's an AI poker agent that plays Texas Hold'em in the PyPokerEngine game.py environment.
+This repo contains our submissions for the Silicon Chip Smackdown at APOGEE 24 and APOGEE 25. AI poker agents that play Texas Hold'em.
 
-## Overview
+## Structure
 
-We tried a bunch of different approaches for this. Started with ML for hand recognition, messed around with Monte Carlo simulations, and eventually landed on final-agent as our submission. It's pretty simple: no learned models, just win rate estimation from simulations.
+- **aipoker24** - Our APOGEE 24 submission. Monte Carlo based final-agent, ML hand recognition experiments, PyPokerEngine stuff. Kept for reference.
+- **aipoker25** - Our APOGEE 25 submission. The winning one. AllInCounterBot in try1.py.
 
-## Research Journey
+## The Winning Bot: AllInCounterBot
 
-### 1. Hand Recognition with ML
+The bot that won is built to counter opponents who go all-in a lot, especially pre-flop. Beyond that it plays a solid adaptive game post-flop and tries to spot aggressive betting.
 
-First thing we looked at was using ML for poker hand evaluation (in research/handreco/). We built an MLP in PyTorch to classify hand ranks like Straight Flush, Four of a Kind, Full House, etc. Trained it on a poker dataset and wanted to see if learned hand strength could help with decisions. It was interesting but we didn't end up using it in the final thing.
+### Pre-Flop (before community cards)
 
-### 2. PyPokerEngine Deep Dive
+Only knows its two hole cards. Ranks them by strength: pairs (high pairs strong, low pairs decent), suited cards, connected cards, high cards.
 
-We spent some time digging into how PyPokerEngine actually works. The main thing we cared about was estimate_hole_card_win_rate(), which runs Monte Carlo simulations to guess your win probability. Also looked at the hand evaluator, card utils, and how the BasePokerPlayer interface works.
+**Facing an all-in:** This is where it shines. It calls all-ins with a wider range than normal. Any pair, strong Aces like AT or better, good suited connectors like KQs. If the hand meets the threshold it calls, otherwise folds.
 
-### 3. Hybrid ML + Monte Carlo
+**Facing a normal bet/raise:** Premium hands (QQ+, AK) it re-raises or shoves. Good but not premium hands it calls. Weak hands it folds.
 
-At some point we tried combining both. Monte Carlo for win rate, MLP to predict whether to fold/call/raise, plus some hand strength features. We had MLPPokerPlayer and finalboss.py doing this. In the end the ML part just added complexity without really helping much in this setup.
+**No bet yet:** Good hands it opens 3-4x big blind. Weak hands it checks.
 
-### 4. Pure Monte Carlo
+### Post-Flop (after community cards)
 
-So we dropped the ML and went with a rule-based strategy that only uses Monte Carlo win rates. Way simpler, easier to debug, and it actually did well in round robin against the other submissions.
+Uses a hand evaluator to get its best five-card hand and assigns a confidence score. Also detects if the opponent is betting aggressively (large vs blind, large vs pot, or all-in).
 
-## Final Submission: final-agent.py
+**Strong hands (two pair or better):** Bets for value, usually raises when facing a bet. Sometimes traps by just calling when it has a monster and the opponent is aggressive.
 
-This is what we submitted. The logic is basically:
+**Medium hands:** Checks when no bet. When facing a bet, calls more often if the bet looks aggressive (might be getting odds or opponent bluffing). Folds if the bet is big and not aggressive, or hand is on the weaker side.
 
-| Win Rate | Action |
-|----------|--------|
-| 90%+ | Raise max / all in |
-| 75%+ | Raise moderate amount |
-| 50%+ | Raise minimum |
-| 20%+ | Call |
-| below 20% | Fold |
-| below 70% + call is expensive | Fold (protect stack) |
+**Weak hands:** Usually folds. One exception: "hero call" when opponent goes all-in, we only have Ace-high, and the call is 15% or less of our stack. Banking on them bluffing with worse.
 
-We run 1000 simulations per decision with estimate_hole_card_win_rate, use the built-in gen_cards and stuff from PyPokerEngine. Extends BasePokerPlayer, implements declare_action. No external models or heavy deps.
+There's a tiny bit of randomness in bet sizing with very strong hands to stay less predictable.
+
+### How it adapts
+
+Doesn't learn opponent profiles over multiple hands. Adapts within each hand based on the situation. Pre-flop it's always ready with that wider all-in calling range. Post-flop it dynamically flags aggressive bets and adjusts: more willing to call medium hands vs aggression, more likely to raise or trap with strong hands.
 
 ## Project Structure
 
 ```
 finalbossplayer/
 ├── apogee.png
-├── final-agent.py       <- the submission
 ├── README.md
-└── research/
-    ├── handreco/        <- ML hand recognition stuff
-    │   └── reco.ipynb
-    └── ai-poker-2024/   <- competition env and our iterations
-        ├── game.py
-        ├── submissions/
-        └── examples/players/
-```
-
-## Usage
-
-Need PyPokerEngine installed. Then just register FinalBossNewPlayer in your game config:
-
-```python
-from pypokerengine.api.game import setup_config, start_poker
-from examples.players.final_agent import FinalBossNewPlayer
-
-config = setup_config(max_round=20, initial_stack=1000, small_blind_amount=10)
-config.register_player(name="finalboss", algorithm=FinalBossNewPlayer())
-# add other players...
-game_result = start_poker(config, verbose=1)
+├── aipoker24/           <- old code (Monte Carlo agent, research)
+│   └── final-agent.py
+├── aipoker25/           <- winning submission
+│   └── try1.py         <- AllInCounterBot
+└── research/            <- ML hand recognition, PyPokerEngine experiments
+    ├── handreco/
+    └── ai-poker-2024/
 ```
 
 ## Dependencies
 
 - Python 3.x
-- [PyPokerEngine](https://github.com/ishikota/PyPokerEngine)
-- NumPy
+- aipoker24 uses [PyPokerEngine](https://github.com/ishikota/PyPokerEngine) and NumPy
+- aipoker25 uses the competition's game engine (player, game, card, hand_evaluator modules)
+
+Built for APOGEE 24 and 25 (Silicon Chip Smackdown).
