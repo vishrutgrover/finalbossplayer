@@ -1,0 +1,3 @@
+[submodule "research/pypoks"]
+	path = research/pypoks
+	url = https://github.com/piteren/pypoks.git

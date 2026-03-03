@@ -53,7 +53,8 @@ finalbossplayer/
 │   └── try1.py         <- AllInCounterBot
 └── research/            <- ML hand recognition, PyPokerEngine experiments
     ├── handreco/
-    └── ai-poker-2024/
+    ├── ai-poker-2024/
+    └── pypoks/          <- submodule: https://github.com/piteren/pypoks
 ```
 
 ## Dependencies
