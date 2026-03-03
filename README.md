@@ -61,5 +61,3 @@ finalbossplayer/
 - Python 3.x
 - aipoker24 uses [PyPokerEngine](https://github.com/ishikota/PyPokerEngine) and NumPy
 - aipoker25 uses the competition's game engine (player, game, card, hand_evaluator modules)
-
-Built for APOGEE 24 and 25 (Silicon Chip Smackdown).
